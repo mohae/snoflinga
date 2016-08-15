@@ -43,13 +43,13 @@ func init() {
 // ID is the type for a 128 bit snowflake.
 type ID [16]byte
 
-// A generator creates snowflakes for a given id
+// Generator creates snowflakes for a given id
 type Generator struct {
 	id       []byte
 	sequence int32
 }
 
-// New Generator returns an initialized generator.  If the passed byte slice is
+// NewGenerator returns an initialized generator.  If the passed byte slice is
 // greater than 8 bytes, the first 8 bytes will be used for the generator's id.
 // If the passed byte slice is less than 8 bytes, the id will be left-padded
 // with 0, zero.  The generator's sequence is initialized with a random
@@ -64,6 +64,7 @@ func NewGenerator(id []byte) Generator {
 	return g
 }
 
+// ID generates an ID from the current time and next sequence value.
 func (g *Generator) ID() ID {
 	var flake ID
 	now := uint64(time.Now().UnixNano() / 1000)
