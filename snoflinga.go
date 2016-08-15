@@ -94,5 +94,5 @@ func (g *Generator) Snowflake() Flake {
 // Time returns the Flake's timestamp as an int64.  The timestamp has microsecond
 // resolution.
 func (f *Flake) Time() int64 {
-	return int64(f[0])<<44 | int64(f[1])<<36 | int64(f[2])<<28 | int64(f[3])<<20 | int64(f[4])<<12 | int64(f[5])<<4 | int64(f[6]>>4<<4)
+	return int64(f[0])<<44 | int64(f[1])<<36 | int64(f[2])<<28 | int64(f[3])<<20 | int64(f[4])<<12 | int64(f[5])<<4 | int64(f[6]>>4)
 }

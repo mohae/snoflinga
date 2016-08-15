@@ -34,7 +34,13 @@ func TestTimeSeq(t *testing.T) {
 	for i, test := range tests {
 		f := timeSequence(test.microseconds, test.sequence)
 		if bytes.Compare(f[:], test.expected[:]) != 0 {
-			t.Errorf("%d: got %x: want %x", i, f, test.expected)
+			t.Errorf("%d: got %x; want %x", i, f, test.expected)
+			continue
+		}
+		// extract the time from it
+		v := f.Time()
+		if v != test.microseconds {
+			t.Errorf("%d: got %d, want %d", i, v, test.microseconds)
 		}
 	}
 }
