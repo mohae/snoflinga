@@ -96,3 +96,10 @@ func (g *Generator) Snowflake() Flake {
 func (f *Flake) Time() int64 {
 	return int64(f[0])<<44 | int64(f[1])<<36 | int64(f[2])<<28 | int64(f[3])<<20 | int64(f[4])<<12 | int64(f[5])<<4 | int64(f[6]>>4)
 }
+
+// ID is aconvenience method that returns the Flake's ID as a []byte.  A
+// snowflake's ID is the last 8 bytes.  No assumptiosn are made about either
+// the contents of those bytes or their layout: that is left up to the user.
+func (f *Flake) ID() []byte {
+	return f[8:]
+}

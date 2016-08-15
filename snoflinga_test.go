@@ -45,6 +45,15 @@ func TestTimeSeq(t *testing.T) {
 	}
 }
 
+func TestID(t *testing.T) {
+	f := Flake{0x47, 0x80, 0xc4, 0x50, 0x8f, 0xdf, 0x0d, 0xab, 0x00, 0x00, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74}
+	v := f.ID()
+	expected := []byte{0x00, 0x00, 'c', 'l', 'i', 'e', 'n', 't'}
+	if bytes.Compare(v, expected) != 0 {
+		t.Errorf("got %q, want %q", v, expected)
+	}
+}
+
 // This only handles the first 8 bytes of a Flake - which is the time and
 // sequence number portion.
 func timeSequence(now int64, v int32) Flake {
