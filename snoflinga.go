@@ -23,7 +23,7 @@ const (
 	// the sequenceBits only applies to the bits that are > 8; e.g for a 12bit
 	// step the mask would apply to the first 8 bits.  No need to mask the last
 	// 8 bits as they can be used as is.
-	sequenceMask uint8 = -1 ^ (-1 << (sequenceBits % 8))
+	//sequenceMask uint8 = -1 ^ (-1 << (sequenceBits % 8))
 )
 
 var (
@@ -78,7 +78,7 @@ func (g *Generator) Snowflake() Flake {
 	flake[3] = byte(now >> 20)
 	flake[4] = byte(now >> 12)
 	flake[5] = byte(now >> 4)
-	flake[6] = byte(now>>4<<4) | uint8(v>>8) ^ sequenceMask
+	flake[6] = byte(now<<4) | uint8(v>>8)
 	flake[7] = byte(v << 8 >> 8)
 	flake[8] = g.id[0]
 	flake[9] = g.id[1]
@@ -93,6 +93,6 @@ func (g *Generator) Snowflake() Flake {
 
 // Time returns the Flake's timestamp as an int64.  The timestamp has microsecond
 // resolution.
-func (id *Flake) Time() int64 {
-	return int64(id[0])<<44 | int64(id[1])<<36 | int64(id[2])<<28 | int64(id[3])<<20 | int64(id[4])<<12 | int64(id[5])<<4 | int64(id[6]>>4<<4)
+func (f *Flake) Time() int64 {
+	return int64(f[0])<<44 | int64(f[1])<<36 | int64(f[2])<<28 | int64(f[3])<<20 | int64(f[4])<<12 | int64(f[5])<<4 | int64(f[6]>>4<<4)
 }
