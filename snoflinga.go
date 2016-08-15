@@ -89,3 +89,9 @@ func (g *Generator) ID() ID {
 	flake[15] = g.id[7]
 	return flake
 }
+
+// Time returns the IDs timestamp as an int64.  The timestamp has microsecond
+// resolution.
+func (id *ID) Time() int64 {
+	return int64(id[0])<<44 | int64(id[1])<<36 | int64(id[2])<<28 | int64(id[3])<<20 | int64(id[4])<<12 | int64(id[5])<<4 | int64(id[6]>>4<<4)
+}
