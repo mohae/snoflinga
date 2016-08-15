@@ -40,8 +40,8 @@ func init() {
 	rng = pcg.New(r.Int64(), 0)
 }
 
-// ID is the type for a 128 bit snowflake.
-type ID [16]byte
+// Flake is the type for a 128 bit snowflake.
+type Flake [16]byte
 
 // Generator creates snowflakes for a given id
 type Generator struct {
@@ -64,9 +64,9 @@ func NewGenerator(id []byte) Generator {
 	return g
 }
 
-// ID generates an ID from the current time and next sequence value.
-func (g *Generator) ID() ID {
-	var flake ID
+// Snowflake generates an Flake from the current time and next sequence value.
+func (g *Generator) Snowflake() Flake {
+	var flake Flake
 	now := uint64(time.Now().UnixNano() / 1000)
 	v := atomic.AddInt32(&g.sequence, 1)
 	if v == sequenceMax {
@@ -91,8 +91,8 @@ func (g *Generator) ID() ID {
 	return flake
 }
 
-// Time returns the IDs timestamp as an int64.  The timestamp has microsecond
+// Time returns the Flake's timestamp as an int64.  The timestamp has microsecond
 // resolution.
-func (id *ID) Time() int64 {
+func (id *Flake) Time() int64 {
 	return int64(id[0])<<44 | int64(id[1])<<36 | int64(id[2])<<28 | int64(id[3])<<20 | int64(id[4])<<12 | int64(id[5])<<4 | int64(id[6]>>4<<4)
 }
