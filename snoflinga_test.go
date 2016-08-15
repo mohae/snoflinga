@@ -70,3 +70,10 @@ func timeSequence(now int64, v int32) Flake {
 
 	return flake
 }
+
+func BenchmarkSnowflake(b *testing.B) {
+	g := NewGenerator([]byte("test"))
+	for i := 0; i < b.N; i++ {
+		g.Snowflake()
+	}
+}

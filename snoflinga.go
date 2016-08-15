@@ -17,9 +17,9 @@ import (
 )
 
 const (
-	idBits             = 64
-	sequenceBits       = 12
-	sequenceMax  int32 = 1 << sequenceBits
+	idBits              = 64
+	sequenceBits        = 12
+	sequenceMax  uint64 = 1<<sequenceBits - 1
 	// the sequenceBits only applies to the bits that are > 8; e.g for a 12bit
 	// step the mask would apply to the first 8 bits.  No need to mask the last
 	// 8 bits as they can be used as is.
@@ -46,7 +46,8 @@ type Flake [16]byte
 // Generator creates snowflakes for a given id
 type Generator struct {
 	id       []byte
-	sequence int32
+	sequence uint64
+	sync.Mutex
 }
 
 // NewGenerator returns an initialized generator.  If the passed byte slice is
@@ -60,7 +61,7 @@ func NewGenerator(id []byte) Generator {
 		g.id = make([]byte, 8-len(id))
 	}
 	g.id = append(g.id, id...)
-	g.sequence = int32(rng.Bound(1<<sequenceBits - 1))
+	g.sequence = uint64(rng.Bound(1<<sequenceBits - 1))
 	return g
 }
 
@@ -68,10 +69,8 @@ func NewGenerator(id []byte) Generator {
 func (g *Generator) Snowflake() Flake {
 	var flake Flake
 	now := uint64(time.Now().UnixNano() / 1000)
-	v := atomic.AddInt32(&g.sequence, 1)
-	if v == sequenceMax {
-		v = atomic.AddInt32(&g.sequence, -v)
-	}
+	v := atomic.AddUint64(&g.sequence, 1)
+	v = v % sequenceMax
 	flake[0] = byte(now >> 44)
 	flake[1] = byte(now >> 36)
 	flake[2] = byte(now >> 28)
