@@ -13,17 +13,17 @@ import (
 	"sync/atomic"
 	"time"
 
-	pcg "github.com/dgryski/go-pcg"
+	pcg "github.com/dgryski/go-pcgr"
 )
 
 const (
 	idBits             = 64
 	sequenceBits       = 12
-	stepMax      int32 = 1 << stepBits
-	// the stepMask only applies to the bits that are > 8; e.g for a 12bit step
-	// the mask would apply to the first 8 bits.  No need to mask the last 8 bits
-	// as they can be used as is.
-	stepMask uint8 = -1 ^ (-1 << (stepBits % 8))
+	sequenceMax  int32 = 1 << sequenceBits
+	// the sequenceBits only applies to the bits that are > 8; e.g for a 12bit
+	// step the mask would apply to the first 8 bits.  No need to mask the last
+	// 8 bits as they can be used as is.
+	sequenceMask uint8 = -1 ^ (-1 << (sequenceBits % 8))
 )
 
 var (
@@ -46,7 +46,7 @@ type ID [16]byte
 // A generator creates snowflakes for a given id
 type Generator struct {
 	id       []byte
-	sequence uint16
+	sequence int32
 }
 
 // New Generator returns an initialized generator.  If the passed byte slice is
@@ -60,31 +60,32 @@ func NewGenerator(id []byte) Generator {
 		g.id = make([]byte, 8-len(id))
 	}
 	g.id = append(g.id, id...)
-	g.sequence = rng.Bounded(1 << sequenceBits)
+	g.sequence = int32(rng.Bound(1<<sequenceBits - 1))
+	return g
 }
 
 func (g *Generator) ID() ID {
-	var flake id
+	var flake ID
 	now := uint64(time.Now().UnixNano() / 1000)
 	v := atomic.AddInt32(&g.sequence, 1)
-	if v == stepMax {
+	if v == sequenceMax {
 		v = atomic.AddInt32(&g.sequence, -v)
 	}
-	flake[0] = byte(now >> 48)
-	flake[1] = byte(now >> 40)
-	flake[2] = byte(now >> 32)
-	flake[3] = byte(now >> 24)
-	flake[4] = byte(now >> 16)
-	flake[5] = byte(now >> 8)
-	flake[6] = byte(now>>4<<4) | uint8(v>>8) ^ stepMask
+	flake[0] = byte(now >> 44)
+	flake[1] = byte(now >> 36)
+	flake[2] = byte(now >> 28)
+	flake[3] = byte(now >> 20)
+	flake[4] = byte(now >> 12)
+	flake[5] = byte(now >> 4)
+	flake[6] = byte(now>>4<<4) | uint8(v>>8) ^ sequenceMask
 	flake[7] = byte(v << 8 >> 8)
-	flake[8] = g.client[0]
-	flake[9] = g.client[1]
-	flake[10] = g.client[2]
-	flake[11] = g.client[3]
-	flake[12] = g.client[4]
-	flake[13] = g.client[5]
-	flake[14] = g.client[6]
-	flake[15] = g.client[7]
+	flake[8] = g.id[0]
+	flake[9] = g.id[1]
+	flake[10] = g.id[2]
+	flake[11] = g.id[3]
+	flake[12] = g.id[4]
+	flake[13] = g.id[5]
+	flake[14] = g.id[6]
+	flake[15] = g.id[7]
 	return flake
 }
