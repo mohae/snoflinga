@@ -1,8 +1,8 @@
 // Package snoflinga generates snowflake like 128bit ids.  The first 52 bits
 // is a timestamp representing time since Unix epoch, in microseconds.  The
-// next 12 bits is a sequence number, that is increased with each snowflake
-// request, for collision avoidance.  The start of the sequence is randomly
-// selected.  The final 64 bits is the id.
+// next 12 bits is a sequence number, for collision avoidance, the value of
+// which is incremented with each request.  The start of the sequence is
+// randomly selected.  The final 64 bits is the id.
 package snoflinga
 
 import (
