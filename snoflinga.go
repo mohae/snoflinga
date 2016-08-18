@@ -60,7 +60,9 @@ func New(id []byte) Generator {
 		g.id = make([]byte, 8-len(id))
 	}
 	g.id = append(g.id, id...)
+	rngMu.Lock()
 	g.sequence = uint64(rng.Bound(1<<sequenceBits - 1))
+	rngMu.Unlock()
 	return g
 }
 
