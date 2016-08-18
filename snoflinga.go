@@ -1,8 +1,8 @@
 // Package snoflinga generates snowflake like 128bit ids.  The first 52 bits
 // is a timestamp representing time since Unix epoch, in microseconds.  The
-// next 12 bits is a sequence number, for collision avoidance, the value of
-// which is incremented with each request.  The start of the sequence is
-// randomly selected.  The final 64 bits is the id.
+// next 12 bits is a sequence number, that is increased with each snowflake
+// request, for collision avoidance.  The start of the sequence is randomly
+// selected.  The final 64 bits is the id.
 package snoflinga
 
 import (
@@ -60,9 +60,7 @@ func New(id []byte) Generator {
 		g.id = make([]byte, 8-len(id))
 	}
 	g.id = append(g.id, id...)
-	rngMu.Lock()
 	g.sequence = uint64(rng.Bound(1<<sequenceBits - 1))
-	rngMu.Unlock()
 	return g
 }
 
@@ -89,6 +87,11 @@ func (g *Generator) Snowflake() Flake {
 	flake[14] = g.id[6]
 	flake[15] = g.id[7]
 	return flake
+}
+
+// ID returns the ID bytes associated with this generator.
+func (g *Generator) ID() []byte {
+	return g.id
 }
 
 // Time returns the Flake's timestamp as an int64.  The timestamp has microsecond
