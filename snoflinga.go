@@ -47,15 +47,14 @@ type Flake [16]byte
 type Generator struct {
 	id       []byte
 	sequence uint64
-	sync.Mutex
 }
 
-// NewGenerator returns an initialized generator.  If the passed byte slice is
+// New returns an initialized generator.  If the passed byte slice is
 // greater than 8 bytes, the first 8 bytes will be used for the generator's id.
 // If the passed byte slice is less than 8 bytes, the id will be left-padded
 // with 0, zero.  The generator's sequence is initialized with a random
 // number.
-func NewGenerator(id []byte) Generator {
+func New(id []byte) Generator {
 	var g Generator
 	if len(id) < 8 {
 		g.id = make([]byte, 8-len(id))
