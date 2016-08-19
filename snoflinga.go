@@ -9,36 +9,15 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
-	"sync"
 	"sync/atomic"
 	"time"
-
-	pcg "github.com/dgryski/go-pcgr"
 )
 
 const (
 	idBits              = 64
 	sequenceBits        = 12
 	sequenceMax  uint64 = 1<<sequenceBits - 1
-	// the sequenceBits only applies to the bits that are > 8; e.g for a 12bit
-	// step the mask would apply to the first 8 bits.  No need to mask the last
-	// 8 bits as they can be used as is.
-	//sequenceMask uint8 = -1 ^ (-1 << (sequenceBits % 8))
 )
-
-var (
-	rng   pcg.Rand
-	rngMu sync.Mutex
-)
-
-func init() {
-	bi := big.NewInt(1<<63 - 1)
-	r, err := rand.Int(rand.Reader, bi)
-	if err != nil {
-		panic(fmt.Sprintf("entropy read error: %s", err))
-	}
-	rng = pcg.New(r.Int64(), 0)
-}
 
 // Flake is the type for a 128 bit snowflake.
 type Flake [16]byte
@@ -60,7 +39,7 @@ func New(id []byte) Generator {
 		g.id = make([]byte, 8-len(id))
 	}
 	g.id = append(g.id, id...)
-	g.sequence = uint64(rng.Bound(1<<sequenceBits - 1))
+	g.sequence = seed()
 	return g
 }
 
@@ -105,4 +84,13 @@ func (f *Flake) Time() int64 {
 // the contents of those bytes or their layout: that is left up to the user.
 func (f *Flake) ID() []byte {
 	return f[8:]
+}
+
+func seed() uint64 {
+	bi := big.NewInt(int64(sequenceMax) + 1)
+	r, err := rand.Int(rand.Reader, bi)
+	if err != nil {
+		panic(fmt.Sprintf("entropy read error: %s", err))
+	}
+	return r.Uint64()
 }
