@@ -38,6 +38,9 @@ func New(id []byte) Generator {
 	if len(id) < 8 {
 		g.id = make([]byte, 8-len(id))
 	}
+	if len(id) > 8 {
+		id = id[:8]
+	}
 	g.id = append(g.id, id...)
 	g.sequence = seed()
 	return g
