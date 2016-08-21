@@ -1,4 +1,4 @@
-# snoflinga
+# snöflinga
 [![GoDoc](https://godoc.org/github.com/mohae/snoflinga?status.svg)](https://godoc.org/github.com/mohae/snoflinga)[![Build Status](https://travis-ci.org/mohae/snoflinga.png)](https://travis-ci.org/mohae/snoflinga)
 
 snöflinga: snowflake like IDs
@@ -18,4 +18,3 @@ bits
 52-63    Sequence number.
 64-127   ID
 ```
-

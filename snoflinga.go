@@ -1,6 +1,6 @@
-// Package snoflinga generates snowflake like 128bit ids.  The first 52 bits
+// Package snöflinga generates snowflake like 128-bit ids.  The first 52 bits
 // is a timestamp representing time since Unix epoch, in microseconds.  The
-// next 12 bits is a sequence number, that is increased with each snowflake
+// next 12 bits is a sequence number which is increased with each snowflake
 // request, for collision avoidance.  The start of the sequence is randomly
 // selected.  The final 64 bits is the id.
 package snoflinga
@@ -28,10 +28,10 @@ type Generator struct {
 	sequence uint64
 }
 
-// New returns an initialized generator.  If the passed byte slice is
+// New returns an initialized generator.  If the passed byte slice's length is
 // greater than 8 bytes, the first 8 bytes will be used for the generator's id.
-// If the passed byte slice is less than 8 bytes, the id will be left-padded
-// with 0, zero.  The generator's sequence is initialized with a random
+// If the passed byte slice's is less than 8 bytes, the id will be left-padded
+// with 0s, zeros.  The generator's sequence is initialized with a random
 // number.
 func New(id []byte) Generator {
 	var g Generator
@@ -76,15 +76,14 @@ func (g *Generator) ID() []byte {
 	return g.id
 }
 
-// Time returns the Flake's timestamp as an int64.  The timestamp has microsecond
-// resolution.
+// Time returns the Flake's timestamp, in microseconds, as an int64.
 func (f *Flake) Time() int64 {
 	return int64(f[0])<<44 | int64(f[1])<<36 | int64(f[2])<<28 | int64(f[3])<<20 | int64(f[4])<<12 | int64(f[5])<<4 | int64(f[6]>>4)
 }
 
-// ID is aconvenience method that returns the Flake's ID as a []byte.  A
-// snowflake's ID is the last 8 bytes.  No assumptiosn are made about either
-// the contents of those bytes or their layout: that is left up to the user.
+// ID returns the Flake's ID as a []byte.  A snowflake's ID is the last 8
+// bytes of the Flake.  No assumptiosn are made about either the contents of
+// those bytes or their layout: that is left up to the user.
 func (f *Flake) ID() []byte {
 	return f[8:]
 }
