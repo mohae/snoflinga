@@ -1,7 +1,11 @@
 // Package snö generates snowflake like 128 bit ids that uses milliseconds
-// for the time elemennt and supports a secondary 13-bit binary data element.
-// If there is the possibility of needing more than 1 million IDs per second
-// for a given ID and secondary ID combination this package should not be used.
+// for the time element and supports a secondary 13-bit binary data element.
+// A 10 bit sequence is used.  The sequence starts at a random position and
+// increment with each Snowflake/   If there is the possibility of needing more
+// than 1,024,000 Flakes per second for a given ID and secondary ID combination
+// collisions will occur.
+//
+// Snö uses 41 bits for the time: 1/1/2016 00:00:00 is used for the epoch.
 //
 // Data layout:
 //    0-40    time, in milliseconds: 69 years
@@ -19,9 +23,10 @@ import (
 )
 
 const (
+	epoch        int64  = 1451606400 // 1/1/2016 00:00:00
 	idBits              = 64
 	sidBits             = 13
-	sequenceBits        = 9
+	sequenceBits        = 10
 	sequenceMax  uint64 = 1<<sequenceBits - 1
 	sidMask      int16  = -1 ^ (-1 << (sidBits % 16))
 )
@@ -36,12 +41,12 @@ type Generator struct {
 	sequence uint64
 }
 
-// New returns an initialized generator.  If the passed byte slice is
+// New returns an initialized generator.  If the passed byte slice's length is
 // greater than 8 bytes, the first 8 bytes will be used for the generator's id.
-// If the passed byte slice is less than 8 bytes, the id will be left-padded
-// with 0, zero.  The id2 parameter is the secondary id: only the right-most
-// 12 bits are used.  The generator's sequence is initialized with a random
-// number.
+// If the passed byte slice's length is less than 8 bytes, the id will be left-
+// padded with 0, zero.  The id2 parameter is the secondary id: only the right-
+// most 12 bits are used.  The generator's sequence is initialized with a
+// random int within [0, 2^10).
 func New(id []byte, id2 int16) Generator {
 	var g Generator
 	if len(id) < 8 {
@@ -59,7 +64,7 @@ func New(id []byte, id2 int16) Generator {
 // Snowflake generates an Flake from the current time and next sequence value.
 func (g *Generator) Snowflake() Flake {
 	var flake Flake
-	now := uint64(time.Now().UnixNano() / 1000000)
+	now := uint64(time.Now().UnixNano()/1000000 - epoch)
 	v := atomic.AddUint64(&g.sequence, 1)
 	v = v % sequenceMax
 	flake[0] = byte(now >> 33)
@@ -91,15 +96,15 @@ func (g *Generator) SID() int16 {
 	return g.sid
 }
 
-// Time returns the Flake's timestamp as an int64.  The timestamp has microsecond
-// resolution.
+// Time returns the Flake's timestamp as an int64.  The timestamp has
+// microsecond resolution.
 func (f *Flake) Time() int64 {
-	return int64(f[0])<<33 | int64(f[1])<<25 | int64(f[2])<<17 | int64(f[3])<<9 | int64(f[4])<<1
+	return int64(f[0])<<33 | int64(f[1])<<25 | int64(f[2])<<17 | int64(f[3])<<9 | int64(f[4])<<1 + epoch
 }
 
 // ID returns the Flake's ID as a []byte.  A snowflake's ID is the last 8
-// bytes.  No assumptiosn are made about either the contents of those bytes
-// or their layout: that is left up to the user.
+// bytes.  No assumptios are made about either the contents of those bytes
+// or their layout, that is left up to the user.
 func (f *Flake) ID() []byte {
 	return f[8:]
 }
