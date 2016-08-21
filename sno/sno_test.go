@@ -65,3 +65,10 @@ func TestFlake(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkSnowFlake(b *testing.B) {
+	g := New([]byte("test"), 42)
+	for i := 0; i < b.N; i++ {
+		g.Snowflake()
+	}
+}
