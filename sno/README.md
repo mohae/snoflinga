@@ -1,6 +1,6 @@
 # snö
 
-snö: snowflake like IDs with millisecond time resolution/
+snö: snowflake like IDs with millisecond time resolution, a 10 bit sequence, a 64 bit ID, and a 13 bit secondary ID.
 
 The timestamp is from a custom epoch: 1/1/2016 00:00:00.
 
@@ -15,7 +15,7 @@ The ID is 8 bytes and no assumptions are made about its contents or layout.  A s
 
 ```
 bits    
- 0-41     Timestamp, in milliseconds
+ 0-40     Timestamp, in milliseconds
 41-50     Sequence number
 51-63     SID: secondary ID
 64-127    ID
