@@ -1,17 +1,18 @@
 // Package snö generates snowflake like 128 bit ids that uses milliseconds
-// for the time element and supports a secondary 13-bit binary data element.
-// A 10 bit sequence is used.  The sequence starts at a random position and
-// increment with each Snowflake/   If there is the possibility of needing more
-// than 1,024,000 Flakes per second for a given ID and secondary ID combination
-// collisions will occur.
+// for the time element, a 7 byte ID, and a 20 bit secondary id.  A sne
+// snoflake has a 11 bit sequence for uniqueness.  The sequence starts at a
+// random position and increments with each Snowflake generated.  If there is
+// a possibility of needing more than 1,024,000 Flakes per second for a given
+// ID and secondary ID combination collisions will occur.
 //
-// Snö uses 41 bits for the time: 1/1/2016 00:00:00 is used for the epoch.
+// Snö uses 41 bits for the time, representing the number of milliseconds
+// since 1/1/2016 00:00:00.
 //
 // Data layout:
-//    0-40    time, in milliseconds: 69 years
-//   41-50    sequence; for collision prevention
-//   51-63    secondary id
-//  64-127    primary ID
+//    0-40  time, in milliseconds: 69 years
+//   41-50  sequence
+//   51-63  secondary ID
+//  64-127  ID
 package sno
 
 import (
@@ -44,7 +45,7 @@ type Generator struct {
 // New returns an initialized generator.  If the passed byte slice's length is
 // greater than 8 bytes, the first 8 bytes will be used for the generator's id.
 // If the passed byte slice's length is less than 8 bytes, the id will be left-
-// padded with 0, zero.  The id2 parameter is the secondary id: only the right-
+// padded with 0x00.  The id2 parameter is the secondary id: only the right-
 // most 12 bits are used.  The generator's sequence is initialized with a
 // random int within [0, 2^10).
 func New(id []byte, id2 int16) Generator {
@@ -96,8 +97,8 @@ func (g *Generator) SID() int16 {
 	return g.sid
 }
 
-// Time returns the Flake's timestamp as an int64.  The timestamp has
-// microsecond resolution.
+// Time returns the Flake's timestamp as an int64.  The returned timestamp is
+// milliseconds since Unix epoch.
 func (f *Flake) Time() int64 {
 	return int64(f[0])<<33 | int64(f[1])<<25 | int64(f[2])<<17 | int64(f[3])<<9 | int64(f[4])<<1 + epoch
 }
